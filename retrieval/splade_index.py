@@ -25,7 +25,7 @@ class SPLADEIndex:
             inputs = tokenizer(chunk.text, return_tensors="pt", truncation=True, padding=True, max_length=256)
             if ModelHub.get_device() == "cuda":
                 inputs = {k: v.cuda() for k, v in inputs.items()}
-            with torch.no_grad():
+            with torch.inference_mode():
                 logits = model(**inputs).logits
                 term_weights, _ = torch.max(logits, dim=1)
                 term_weights = term_weights.squeeze(0)
@@ -49,7 +49,7 @@ class SPLADEIndex:
         inputs = tokenizer(query, return_tensors="pt", truncation=True, padding=True, max_length=32)
         if ModelHub.get_device() == "cuda":
             inputs = {k: v.cuda() for k, v in inputs.items()}
-        with torch.no_grad():
+        with torch.inference_mode():
             logits = model(**inputs).logits
             q_weights, _ = torch.max(logits, dim=1)
             q_weights = q_weights.squeeze(0)

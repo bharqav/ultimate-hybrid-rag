@@ -23,9 +23,13 @@ class VectorStore:
             raise RuntimeError("faiss not installed")
         emb_np = np.array(embeddings, dtype=np.float32)
         faiss.normalize_L2(emb_np)
-        quantizer = faiss.IndexFlatIP(self.dim)
-        self.index = faiss.IndexIVFPQ(quantizer, self.dim, 1024, 16, 8)
-        self.index.train(emb_np)
+        n = len(embeddings)
+        if n < 1024:
+            self.index = faiss.IndexFlatL2(self.dim)
+        else:
+            quantizer = faiss.IndexFlatIP(self.dim)
+            self.index = faiss.IndexIVFPQ(quantizer, self.dim, 1024, 16, 8)
+            self.index.train(emb_np)
         self.index.add(emb_np)
         self.id_map = chunk_ids
         faiss.write_index(self.index, self.index_path)
