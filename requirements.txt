@@ -13,8 +13,9 @@ lightgbm
 transformers
 torch
 colbert-ai
-splade
 scikit-learn
 pandas
 pyarrow
 aiohttp
+httpx
+datasets
