@@ -1,0 +1,18 @@
+graph TD
+    A[Documents] --> B[Ingestion]
+    B --> C[Chunking]
+    C --> D[Dense Embeddings]
+    C --> E[BM25]
+    C --> F[SPLADE]
+    C --> G[ColBERT]
+    D --> H[Vector Index]
+    E --> I[BM25 Index]
+    F --> J[SPLADE Index]
+    G --> K[ColBERT Index]
+    H --> L[Retriever]
+    I --> L
+    J --> L
+    K --> L
+    L --> M[Fusion + Rerank]
+    M --> N[API/TUI]
+    N --> O[LLM Generation]

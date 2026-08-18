@@ -1,0 +1,237 @@
+<div align="center">
+
+# Ultimate Offline Hybrid RAG Engine
+
+### A production-ready, offline-first Retrieval-Augmented Generation system
+
+**Dense Retrieval · BM25 · SPLADE · ColBERT · Fusion & Reranking · API & TUI**
+
+[![CI](https://github.com/bharqav/ultimate-hybrid-rag/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/bharqav/ultimate-hybrid-rag/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+</div>
+
+---
+
+**Ultimate Offline Hybrid RAG Engine** is an offline-first retrieval augmented generation system that combines the power of dense retrieval, BM25, SPLADE, and ColBERT with dynamic fusion and cross-encoder reranking.
+
+> **Why build this?** Relying on single-strategy retrieval (like dense vectors alone) often misses exact keyword matches, whereas traditional BM25 struggles with semantic intent. This engine brings together four state-of-the-art retrieval strategies in parallel, fusing them for maximum recall and precision, all while remaining completely offline and private.
+
+---
+
+## Architecture
+
+The engine is built to stay modular, reproducible, and easy to benchmark. It exposes both a FastAPI interface and a rich Terminal UI (Textual) for fast iteration.
+
+```mermaid
+flowchart TB
+    subgraph Clients
+        C1[FastAPI REST API]
+        C2[Terminal UI / TUI]
+    end
+
+    subgraph Orchestrator [Query Planner & Orchestrator]
+        direction TB
+        P[Query Planner]
+    end
+
+    subgraph Retrievers [Parallel Retrieval Stack]
+        direction LR
+        D[Dense Index\nFaiss]
+        B[BM25 Index\nRank-BM25]
+        S[SPLADE Index\nSparse]
+        C[ColBERT Index\nLate Interaction]
+    end
+
+    subgraph Fusion [Ranking & Fusion]
+        F[LightGBM Fusion]
+        R[Cross-Encoder Reranker]
+    end
+    
+    subgraph LLM [Local Generation]
+        O[Ollama / Local LLM]
+    end
+
+    C1 & C2 --> Orchestrator
+    P --> D
+    P --> B
+    P --> S
+    P --> C
+    D & B & S & C --> F
+    F --> R
+    R --> O
+    O --> C1
+    O --> C2
+```
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Interface as API / TUI
+    participant Stack as Retriever Stack
+    participant Rank as Fusion & Rerank Layer
+    participant LLM as Ollama Model
+
+    User->>Interface: Ask a question
+    Interface->>Stack: Classify intent & Retrieve candidates
+    par Fan-out to 4 indexes
+        Stack->>Stack: Dense Search
+        Stack->>Stack: BM25 Search
+        Stack->>Stack: SPLADE Search
+        Stack->>Stack: ColBERT Search
+    end
+    Stack-->>Rank: Ranked results from each store
+    Rank->>Rank: LightGBM fusion + Cross-Encoder reranking
+    Rank->>LLM: Final context package
+    LLM-->>Interface: Generated streaming answer
+    Interface-->>User: Return response
+```
+
+---
+
+## Key Features
+
+| Capability | Implementation |
+|-----------|----------------|
+| **Multi-Strategy Retrieval** | Parallel execution of Dense, BM25, SPLADE, and ColBERT |
+| **Advanced Reranking** | LightGBM score fusion followed by Cross-Encoder reranking |
+| **Completely Offline** | Runs locally using HuggingFace models and Ollama |
+| **Rich Interfaces** | FastAPI for production streaming and Textual TUI for terminal usage |
+| **Configurable Parameters** | Environment-variable driven settings for top-K, chunks, and batching |
+| **Hardware Aware** | Includes a local GPU scheduler placeholder for resource management |
+
+---
+
+## Project Status
+
+> **Beta** — The core multi-retrieval and fusion pipeline is fully operational.
+
+**Current Limitations:**
+- The GPU scheduler is a placeholder.
+- SPLADE inference is not yet optimized.
+- Fusion training is intentionally lightweight.
+- Async batching and advanced recovery are planned but not yet implemented.
+
+---
+
+## Quick Start
+
+### 1. Installation
+
+Ensure you have Python 3.10+ installed.
+
+```bash
+git clone https://github.com/bharqav/ultimate-hybrid-rag.git
+cd ultimate-hybrid-rag
+pip install -r requirements.txt
+```
+
+### 2. Setup Documents
+
+Add your documents (PDFs, TXTs) to the `docs/` directory.
+
+### 3. Build Indexes
+
+Run the ingestion pipeline to parse documents, chunk them, and build the Dense, BM25, SPLADE, and ColBERT indexes.
+
+```bash
+python index.py ingest
+```
+
+### 4. Run Interfaces
+
+**Start the FastAPI Server:**
+```bash
+python index.py api
+```
+*The API will be available at `http://0.0.0.0:8000`.*
+
+**Run a Single Query (CLI):**
+```bash
+python index.py query "What is the main topic of the documents?"
+```
+
+**Launch the Terminal Dashboard (TUI):**
+```bash
+python index.py tui
+```
+
+---
+
+## Configuration Reference
+
+The engine is highly configurable via environment variables prefixed with `RAG_`.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RAG_EMBED_MODEL` | `all-MiniLM-L6-v2` | HuggingFace model for dense embeddings |
+| `RAG_CROSS_ENCODER` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | HuggingFace cross-encoder for reranking |
+| `RAG_OLLAMA_MODEL` | `llama3` | Default Ollama model to use for generation |
+| `RAG_OLLAMA_URL` | `http://localhost:11434/api/generate` | Local Ollama API endpoint |
+| `RAG_DB_DIR` | `./db` | Directory to store indexes |
+| `RAG_DOCS_DIR` | `./docs` | Directory to monitor for new documents |
+| `RAG_TARGET_CHUNK_TOKENS`| `500` | Target token size per chunk |
+| `RAG_CHUNK_OVERLAP` | `50` | Token overlap between chunks |
+| `RAG_FINAL_TOP_K` | `5` | Number of final chunks sent to the LLM |
+
+See `config/settings.py` for the complete list of tunable parameters (e.g., individual retriever Top-N settings, GPU memory limits, etc.).
+
+---
+
+## Building & Testing
+
+We provide a `Makefile` to streamline development tasks.
+
+```bash
+# Install dependencies
+make install
+
+# Run tests
+make test
+
+# Lint and Type Check
+make lint
+
+# Auto-format codebase
+make format
+
+# Run CI pipeline locally
+make ci
+```
+
+---
+
+## Benchmarking
+
+We take retrieval performance seriously. The benchmark notes in `docs/benchmarks.md` cover recall, latency, and comparison runs across different embedding models and retrieval strategies. Supporting query sets live in `docs/bench_queries.txt`.
+
+---
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for future enhancements, including:
+- Productionizing the GPU scheduler.
+- Optimizing SPLADE inference with ONNX.
+- Implementing asynchronous batched ingestion.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## Security
+
+Please report vulnerabilities following our [Security Policy](SECURITY.md).
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

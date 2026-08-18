@@ -1,0 +1,49 @@
+from .utils import safe_import
+
+fitz = safe_import("fitz")
+sentence_transformers = safe_import("sentence_transformers")
+SentenceTransformer = getattr(sentence_transformers, "SentenceTransformer", None) if sentence_transformers else None
+CrossEncoder = getattr(sentence_transformers, "CrossEncoder", None) if sentence_transformers else None
+faiss = safe_import("faiss")
+rank_bm25_module = safe_import("rank_bm25")
+BM25Okapi = getattr(rank_bm25_module, "BM25Okapi", None) if rank_bm25_module else None
+tiktoken = safe_import("tiktoken")
+requests = safe_import("requests")
+fastapi = safe_import("fastapi")
+FastAPI = getattr(fastapi, "FastAPI", None) if fastapi else None
+Request = getattr(fastapi, "Request", None) if fastapi else None
+StreamingResponse = getattr(fastapi.responses, "StreamingResponse", None) if fastapi else None
+JSONResponse = getattr(fastapi.responses, "JSONResponse", None) if fastapi else None
+Response = getattr(fastapi.responses, "Response", None) if fastapi else None
+BackgroundTasks = getattr(fastapi, "BackgroundTasks", None) if fastapi else None
+uvicorn = safe_import("uvicorn")
+watchdog = safe_import("watchdog")
+Observer = getattr(watchdog, "Observer", None) if watchdog else None
+FileSystemEventHandler = (
+    getattr(watchdog.events, "FileSystemEventHandler", None) if watchdog and hasattr(watchdog, "events") else None
+)
+textual = safe_import("textual")
+App = getattr(textual, "App", None) if textual else None
+ComposeResult = getattr(textual.app, "ComposeResult", None) if textual else None
+Header = getattr(textual.widgets, "Header", None) if textual else None
+Footer = getattr(textual.widgets, "Footer", None) if textual else None
+Static = getattr(textual.widgets, "Static", None) if textual else None
+Log = getattr(textual.widgets, "Log", None) if textual else None
+prometheus_client = safe_import("prometheus_client")
+Histogram = getattr(prometheus_client, "Histogram", None) if prometheus_client else None
+Counter = getattr(prometheus_client, "Counter", None) if prometheus_client else None
+Gauge = getattr(prometheus_client, "Gauge", None) if prometheus_client else None
+generate_latest = getattr(prometheus_client, "generate_latest", None) if prometheus_client else None
+CollectorRegistry = getattr(prometheus_client, "CollectorRegistry", None) if prometheus_client else None
+lightgbm = safe_import("lightgbm")
+LGBMRanker = getattr(lightgbm, "LGBMRanker", None) if lightgbm else None
+torch = safe_import("torch")
+transformers = safe_import("transformers")
+AutoTokenizer = getattr(transformers, "AutoTokenizer", None) if transformers else None
+AutoModel = getattr(transformers, "AutoModel", None) if transformers else None
+colbert_ai = safe_import("colbert")
+splade_pkg = safe_import("splade")
+sklearn = safe_import("sklearn")
+pandas = safe_import("pandas")
+pyarrow = safe_import("pyarrow")
+aiohttp = safe_import("aiohttp")

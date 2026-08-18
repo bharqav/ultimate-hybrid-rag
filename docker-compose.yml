@@ -1,0 +1,11 @@
+services:
+  rag:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - RAG_DB_DIR=/app/db
+      - RAG_DOCS_DIR=/app/docs
+    volumes:
+      - ./docs:/app/docs
+      - ./db:/app/db
