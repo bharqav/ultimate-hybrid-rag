@@ -23,12 +23,12 @@ FileSystemEventHandler = (
     getattr(watchdog.events, "FileSystemEventHandler", None) if watchdog and hasattr(watchdog, "events") else None
 )
 textual = safe_import("textual")
-App = getattr(textual, "App", None) if textual else None
-ComposeResult = getattr(textual.app, "ComposeResult", None) if textual else None
-Header = getattr(textual.widgets, "Header", None) if textual else None
-Footer = getattr(textual.widgets, "Footer", None) if textual else None
-Static = getattr(textual.widgets, "Static", None) if textual else None
-Log = getattr(textual.widgets, "Log", None) if textual else None
+try:
+    from textual.app import App, ComposeResult
+    from textual.widgets import Header, Footer, Static, Input, Button, Log, Markdown
+    from textual.containers import Container, Vertical, Horizontal
+except ImportError:
+    App = ComposeResult = Header = Footer = Static = Input = Button = Log = Markdown = Container = Vertical = Horizontal = None
 prometheus_client = safe_import("prometheus_client")
 Histogram = getattr(prometheus_client, "Histogram", None) if prometheus_client else None
 Counter = getattr(prometheus_client, "Counter", None) if prometheus_client else None
