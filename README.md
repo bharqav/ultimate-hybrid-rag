@@ -108,7 +108,22 @@ Evaluated on the **BEIR SciFact** benchmark dataset. Our hybrid retrieval pipeli
 
 ## Quick Start
 
-### 1. Installation
+### 1. Prerequisites (Ollama Setup)
+
+The response generation layer requires a local LLM running via **[Ollama](https://ollama.com/)**.
+
+1. Download and install Ollama from [ollama.com](https://ollama.com/).
+2. Pull the default LLM (`llama3`):
+   ```bash
+   ollama pull llama3
+   ```
+3. Start the Ollama service (if not running in the background):
+   ```bash
+   ollama serve
+   ```
+*(By default, the engine connects to `http://localhost:11434/api/generate`. You can customize the model and URL via `RAG_OLLAMA_MODEL` and `RAG_OLLAMA_URL`.)*
+
+### 2. Installation
 
 Ensure you have Python 3.10+ installed.
 
@@ -118,19 +133,19 @@ cd ultimate-hybrid-rag
 pip install -r requirements.txt
 ```
 
-### 2. Setup Documents
+### 3. Setup Documents
 
-Add your documents (PDFs, TXTs) to the `docs/` directory.
+Add your documents (PDFs, Markdown) to the `docs/` directory.
 
-### 3. Build Indexes
+### 4. Build Indexes
 
-Run the ingestion pipeline to parse documents, chunk them, and build the Dense, BM25, SPLADE, and ColBERT indexes.
+Run the ingestion pipeline to parse documents, chunk them, and build the Dense, BM25, SPLADE, and ColBERT indexes:
 
 ```bash
 python index.py ingest
 ```
 
-### 4. Run Interfaces
+### 5. Run Interfaces
 
 **Start the FastAPI Server:**
 ```bash
